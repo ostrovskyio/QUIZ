@@ -1,0 +1,33 @@
+body {
+  background-color: lightblue;
+}
+.main {
+display: block;
+width: 100%;
+text-align: center;
+}
+.question {
+  font-weight: bold;
+  font-size: larger;
+  padding-bottom: 10px;
+}
+.choices {
+  padding: 10px;
+  font-style: italic;
+  font-weight: bolder;
+}
+.progress {
+  margin-top: 20px;
+  color: rgb(65, 62, 62);
+  font-weight: bold;
+}
+button {
+  cursor: pointer;
+  font-weight: bold;
+  background-color: aliceblue;
+  box-shadow: 2px 2px 2px black;
+  border: 2px solid black;
+  border-radius: 7px;
+  padding: 5px;
+
+}
