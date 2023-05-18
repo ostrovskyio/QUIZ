@@ -1,22 +1,68 @@
 import './App.css';
-import React, { useState, useContext } from 'react';
+import React, { useContext } from 'react';
+import { createStore } from 'redux';
+import { Provider, useDispatch, useSelector } from 'react-redux';
 
-const QuizContext = React.createContext();
+const SET_SCORE = 'SET_SCORE';
+const SET_CURRENT_QUESTION_INDEX = 'SET_CURRENT_QUESTION_INDEX';
+const SET_USER_ANSWERS = 'SET_USER_ANSWERS';
 
-const QuizProvider = ({ children }) => {
-  const [score, setScore] = useState(0);
-  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
-  const [userAnswers, setUserAnswers] = useState([]);
+const setScore = (score) => ({
+  type: SET_SCORE,
+  score,
+});
+
+const setCurrentQuestionIndex = (index) => ({
+  type: SET_CURRENT_QUESTION_INDEX,
+  index,
+});
+
+const setUserAnswers = (answers) => ({
+  type: SET_USER_ANSWERS,
+  answers,
+});
+
+const initialState = {
+  score: 0,
+  currentQuestionIndex: 0,
+  userAnswers: [],
+};
+
+const quizReducer = (state = initialState, action) => {
+  switch (action.type) {
+    case SET_SCORE:
+      return {
+        ...state,
+        score: action.score,
+      };
+    case SET_CURRENT_QUESTION_INDEX:
+      return {
+        ...state,
+        currentQuestionIndex: action.index,
+      };
+    case SET_USER_ANSWERS:
+      return {
+        ...state,
+        userAnswers: action.answers,
+      };
+    default:
+      return state;
+  }
+};
+
+const Quiz = () => {
+  const dispatch = useDispatch();
+  const { score, currentQuestionIndex, userAnswers } = useSelector((state) => state);
 
   const handleGuess = (selectedAnswer) => {
-    const currentQuestion = getCurrentQuestion();
+    const currentQuestion = questions[currentQuestionIndex];
 
     if (currentQuestion.answer === selectedAnswer) {
-      setScore(score + 1);
+      dispatch(setScore(score + 1));
     }
 
-    setUserAnswers([...userAnswers, selectedAnswer]);
-    setCurrentQuestionIndex(currentQuestionIndex + 1);
+    dispatch(setUserAnswers([...userAnswers, selectedAnswer]));
+    dispatch(setCurrentQuestionIndex(currentQuestionIndex + 1));
   };
 
   const getCurrentQuestion = () => {
@@ -26,25 +72,6 @@ const QuizProvider = ({ children }) => {
   const hasEnded = () => {
     return currentQuestionIndex >= questions.length;
   };
-
-  const quizContextValue = {
-    score,
-    userAnswers,
-    handleGuess,
-    hasEnded,
-    getCurrentQuestion,
-    currentQuestionIndex,
-  };
-
-  return (
-    <QuizContext.Provider value={quizContextValue}>
-      {children}
-    </QuizContext.Provider>
-  );
-};
-
-const Quiz = () => {
-  const { score, userAnswers, handleGuess, hasEnded, getCurrentQuestion, currentQuestionIndex } = useContext(QuizContext);
 
   const displayNext = () => {
     if (hasEnded()) {
@@ -70,11 +97,9 @@ const Quiz = () => {
     return (
       <div>
         {choices.map((choice, index) => (
-          <div>
+          <div key={index}>
             <div className='choices'>{choice}</div>
-            <button onClick={() => handleGuess(choice)}>
-              Select Answer
-            </button>
+            <button onClick={() => handleGuess(choice)}>Select Answer</button>
           </div>
         ))}
       </div>
@@ -91,7 +116,11 @@ const Quiz = () => {
 
   const Progress = () => {
     const currentQuestionNumber = currentQuestionIndex + 1;
-    return <div className='progress'>Question {currentQuestionNumber} of {questions.length}</div>;
+    return (
+      <div className='progress'>
+        Question {currentQuestionNumber} of {questions.length}
+      </div>
+    );
   };
 
   return (
@@ -100,6 +129,18 @@ const Quiz = () => {
         <h1>UKRAINIAN QUIZ</h1>
         {displayNext()}
       </div>
+    </div>
+  );
+};
+
+const store = createStore(quizReducer);
+
+const App = () => {
+  return (
+    <div className='main'>
+      <Provider store={store}>
+        <Quiz />
+      </Provider>
     </div>
   );
 };
@@ -131,15 +172,5 @@ const questions = [
     answer: "Yes"
   }
 ];
-
-const App = () => {
-  return (
-    <div className='main'>
-    <QuizProvider>
-      <Quiz />
-    </QuizProvider>
-    </div>
-  );
-};
 
 export default App;
